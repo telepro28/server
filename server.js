@@ -3,6 +3,8 @@ const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 3000
 
+/* lista de servidores extractores */
+
 const servers = [
  "https://extraer1.vercel.app",
  "https://extraer-beta.vercel.app"
@@ -10,55 +12,69 @@ const servers = [
 
 let sessions = {}
 
-function getClientIP(req){
+function getUserId(req,res){
 
- const forwarded = req.headers["x-forwarded-for"]
+ let cookie = req.headers.cookie
 
- if(forwarded){
-  return forwarded.split(",")[0].trim()
+ if(cookie){
+
+  const match = cookie.match(/uid=([^;]+)/)
+
+  if(match){
+   return match[1]
+  }
+
  }
 
- return req.socket.remoteAddress || "0.0.0.0"
+ /* crear id nuevo */
+
+ const uid = Math.random().toString(36).substring(2,10)
+
+ res.setHeader(
+  "Set-Cookie",
+  `uid=${uid}; Path=/; Max-Age=86400`
+ )
+
+ return uid
 }
 
-function getServer(ip){
+function getServer(uid){
 
  const now = Date.now()
 
- if(!sessions[ip]){
+ if(!sessions[uid]){
 
-  /* asignar servidor inicial pseudo-random */
+  const index = Math.floor(Math.random() * servers.length)
 
-  const start =
-  Math.floor(now / 60000) % servers.length
-
-  sessions[ip] = {
-   index: start,
+  sessions[uid] = {
+   index,
    time: now
   }
 
  }
 
- const elapsed = now - sessions[ip].time
+ const elapsed = now - sessions[uid].time
+
+ /* cambiar servidor solo después de 1 minuto */
 
  if(elapsed > 60000){
 
-  sessions[ip].index =
-  (sessions[ip].index + 1) % servers.length
+  sessions[uid].index =
+  (sessions[uid].index + 1) % servers.length
 
-  sessions[ip].time = now
+  sessions[uid].time = now
 
  }
 
- return servers[sessions[ip].index]
+ return servers[sessions[uid].index]
 
 }
 
 app.get("/play",(req,res)=>{
 
- const ip = getClientIP(req)
+ const uid = getUserId(req,res)
 
- const server = getServer(ip)
+ const server = getServer(uid)
 
  if(req.query.regional){
 
@@ -81,5 +97,5 @@ app.get("/play",(req,res)=>{
 })
 
 app.listen(PORT,()=>{
- console.log("balanceador funcionando en "+PORT)
+ console.log("balanceador profesional activo en "+PORT)
 })
