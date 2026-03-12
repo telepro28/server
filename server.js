@@ -3,12 +3,14 @@ const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 3000
 
-/* servidores extractores */
+/* lista de extractores */
 
 const servers = [
  "https://extraer1.vercel.app",
  "https://extraer-beta.vercel.app"
 ]
+
+/* elegir servidor según IP + tiempo */
 
 function getServer(ip){
 
@@ -18,7 +20,14 @@ function getServer(ip){
   hash += ip.charCodeAt(i)
  }
 
- return servers[hash % servers.length]
+ /* cambiar cada minuto */
+
+ const timeSlot = Math.floor(Date.now() / 60000)
+
+ const index = (hash + timeSlot) % servers.length
+
+ return servers[index]
+
 }
 
 app.get("/play",(req,res)=>{
@@ -29,8 +38,6 @@ app.get("/play",(req,res)=>{
  "0.0.0.0"
 
  const server = getServer(ip)
-
- /* detectar canal */
 
  if(req.query.regional){
 
