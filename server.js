@@ -3,30 +3,42 @@ const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 3000
 
-/* lista de extractores */
+/* servidores extractores */
 
 const servers = [
  "https://extraer1.vercel.app",
  "https://extraer-beta.vercel.app"
 ]
 
-/* elegir servidor según IP + tiempo */
+/* guardar sesión por IP */
+
+let sessions = {}
 
 function getServer(ip){
 
- let hash = 0
+ const now = Date.now()
 
- for(let i=0;i<ip.length;i++){
-  hash += ip.charCodeAt(i)
+ if(!sessions[ip]){
+  sessions[ip] = {
+   index: 0,
+   time: now
+  }
  }
 
- /* cambiar cada minuto */
+ const elapsed = now - sessions[ip].time
 
- const timeSlot = Math.floor(Date.now() / 60000)
+ /* si pasó 1 minuto cambia servidor */
 
- const index = (hash + timeSlot) % servers.length
+ if(elapsed > 60000){
 
- return servers[index]
+  sessions[ip].index =
+  (sessions[ip].index + 1) % servers.length
+
+  sessions[ip].time = now
+
+ }
+
+ return servers[sessions[ip].index]
 
 }
 
@@ -64,5 +76,5 @@ app.get("/play",(req,res)=>{
 })
 
 app.listen(PORT,()=>{
- console.log("balanceador activo en "+PORT)
+ console.log("balanceador inteligente en "+PORT)
 })
