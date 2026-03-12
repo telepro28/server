@@ -8,17 +8,18 @@ const PORT = process.env.PORT || 3000
 
 const servers = [
  "https://extraer1.vercel.app",
- "https://extraer-beta.vercel.app"
+ "https://extraer-beta.vercel.app",
+ "https://nada-pi2z.onrender.com"
 ]
 
 let sessions = {}
 let serverStatus = {}
 
-/* marcar servidores activos */
+/* marcar todos activos */
 
 servers.forEach(s => serverStatus[s] = true)
 
-/* obtener cookie usuario */
+/* obtener ID de usuario por cookie */
 
 function getUserId(req,res){
 
@@ -39,7 +40,7 @@ function getUserId(req,res){
  return uid
 }
 
-/* verificar si servidor está activo */
+/* verificar si servidor está vivo */
 
 function checkServer(server){
 
@@ -55,7 +56,7 @@ function checkServer(server){
 
 }
 
-/* elegir servidor disponible */
+/* elegir servidor */
 
 async function getAvailableServer(uid){
 
@@ -72,6 +73,8 @@ async function getAvailableServer(uid){
 
  const elapsed = now - sessions[uid].time
 
+ /* cambiar servidor solo después de 1 minuto */
+
  if(elapsed > 60000){
 
   sessions[uid].index =
@@ -83,17 +86,15 @@ async function getAvailableServer(uid){
 
  let server = servers[sessions[uid].index]
 
- /* si servidor está caído buscar otro */
+ /* si está caído usar otro */
 
  if(!serverStatus[server]){
 
   for(let s of servers){
-
    if(serverStatus[s]){
     server = s
     break
    }
-
   }
 
  }
@@ -101,7 +102,7 @@ async function getAvailableServer(uid){
  return server
 }
 
-/* monitor servidores cada 30 segundos */
+/* monitor de servidores */
 
 setInterval(async ()=>{
 
@@ -127,6 +128,7 @@ app.get("/play",async(req,res)=>{
    `${server}/play?regional=${req.query.regional}`
   )
   return
+
  }
 
  if(req.query.deportes){
@@ -135,6 +137,7 @@ app.get("/play",async(req,res)=>{
    `${server}/play?deportes=${req.query.deportes}`
   )
   return
+
  }
 
  res.send("canal no especificado")
