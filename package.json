@@ -1,0 +1,12 @@
+{
+  "name": "balanceador-iptv",
+  "version": "1.0.0",
+  "description": "balanceador de extractores IPTV",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
