@@ -3,31 +3,43 @@ const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 3000
 
-/* servidores extractores */
-
 const servers = [
  "https://extraer1.vercel.app",
  "https://extraer-beta.vercel.app"
 ]
 
-/* guardar sesión por IP */
-
 let sessions = {}
+
+function getClientIP(req){
+
+ const forwarded = req.headers["x-forwarded-for"]
+
+ if(forwarded){
+  return forwarded.split(",")[0].trim()
+ }
+
+ return req.socket.remoteAddress || "0.0.0.0"
+}
 
 function getServer(ip){
 
  const now = Date.now()
 
  if(!sessions[ip]){
+
+  /* asignar servidor inicial pseudo-random */
+
+  const start =
+  Math.floor(now / 60000) % servers.length
+
   sessions[ip] = {
-   index: 0,
+   index: start,
    time: now
   }
+
  }
 
  const elapsed = now - sessions[ip].time
-
- /* si pasó 1 minuto cambia servidor */
 
  if(elapsed > 60000){
 
@@ -44,31 +56,24 @@ function getServer(ip){
 
 app.get("/play",(req,res)=>{
 
- const ip =
- req.headers["x-forwarded-for"] ||
- req.socket.remoteAddress ||
- "0.0.0.0"
+ const ip = getClientIP(req)
 
  const server = getServer(ip)
 
  if(req.query.regional){
 
-  const url =
-  `${server}/play?regional=${req.query.regional}`
-
-  res.redirect(url)
+  res.redirect(
+   `${server}/play?regional=${req.query.regional}`
+  )
   return
-
  }
 
  if(req.query.deportes){
 
-  const url =
-  `${server}/play?deportes=${req.query.deportes}`
-
-  res.redirect(url)
+  res.redirect(
+   `${server}/play?deportes=${req.query.deportes}`
+  )
   return
-
  }
 
  res.send("canal no especificado")
@@ -76,5 +81,5 @@ app.get("/play",(req,res)=>{
 })
 
 app.listen(PORT,()=>{
- console.log("balanceador inteligente en "+PORT)
+ console.log("balanceador funcionando en "+PORT)
 })
