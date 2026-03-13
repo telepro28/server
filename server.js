@@ -10,7 +10,7 @@ const servers = [
  "https://extraer-beta.vercel.app",
  "https://nada-pi2z.onrender.com",
  "https://nada1.onrender.com",
- "nada1-yt1c.onrender.com",
+ "https://nada1-yt1c.onrender.com",
 ]
 
 let sessions = {}
