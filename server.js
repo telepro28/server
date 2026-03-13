@@ -1,26 +1,17 @@
 const express = require("express")
-const https = require("https")
 
 const app = express()
 const PORT = process.env.PORT || 3000
 
-/* lista de servidores extractores */
+/* lista de servidores */
 
 const servers = [
  "https://extraer1.vercel.app",
  "https://extraer-beta.vercel.app",
- "https://nada-pi2z.onrender.com",
- "https://nada1.onrender.com"
+ "https://nada-pi2z.onrender.com"
 ]
 
 let sessions = {}
-let serverStatus = {}
-
-/* marcar todos activos */
-
-servers.forEach(s => serverStatus[s] = true)
-
-/* obtener ID de usuario por cookie */
 
 function getUserId(req,res){
 
@@ -41,25 +32,7 @@ function getUserId(req,res){
  return uid
 }
 
-/* verificar si servidor está vivo */
-
-function checkServer(server){
-
- return new Promise(resolve=>{
-
-  https.get(server,res=>{
-   resolve(res.statusCode < 500)
-  }).on("error",()=>{
-   resolve(false)
-  })
-
- })
-
-}
-
-/* elegir servidor */
-
-async function getAvailableServer(uid){
+function getServer(uid){
 
  const now = Date.now()
 
@@ -74,7 +47,7 @@ async function getAvailableServer(uid){
 
  const elapsed = now - sessions[uid].time
 
- /* cambiar servidor solo después de 1 minuto */
+ /* cambiar servidor solo si pasó 1 minuto */
 
  if(elapsed > 60000){
 
@@ -85,43 +58,15 @@ async function getAvailableServer(uid){
 
  }
 
- let server = servers[sessions[uid].index]
+ return servers[sessions[uid].index]
 
- /* si está caído usar otro */
-
- if(!serverStatus[server]){
-
-  for(let s of servers){
-   if(serverStatus[s]){
-    server = s
-    break
-   }
-  }
-
- }
-
- return server
 }
 
-/* monitor de servidores */
-
-setInterval(async ()=>{
-
- for(let server of servers){
-
-  const alive = await checkServer(server)
-
-  serverStatus[server] = alive
-
- }
-
-},30000)
-
-app.get("/play",async(req,res)=>{
+app.get("/play",(req,res)=>{
 
  const uid = getUserId(req,res)
 
- const server = await getAvailableServer(uid)
+ const server = getServer(uid)
 
  if(req.query.regional){
 
@@ -146,5 +91,5 @@ app.get("/play",async(req,res)=>{
 })
 
 app.listen(PORT,()=>{
- console.log("balanceador avanzado en "+PORT)
+ console.log("balanceador ultra escalable en "+PORT)
 })
