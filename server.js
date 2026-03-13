@@ -8,7 +8,8 @@ const PORT = process.env.PORT || 3000
 const servers = [
  "https://extraer1.vercel.app",
  "https://extraer-beta.vercel.app",
- "https://nada-pi2z.onrender.com"
+ "https://nada-pi2z.onrender.com",
+ "https://nada1.onrender.com"
 ]
 
 let sessions = {}
