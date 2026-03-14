@@ -12,7 +12,8 @@ const servers = [
  "https://nada1.onrender.com",
  "https://nada1-yt1c.onrender.com",
  "http://zonabom.cu.ma/medio.php",
- "https://recetascaseras.whf.bz/medio.php"
+ "http://recetascaseras.whf.bz/medio.php",
+ "http://tequiero.cu.ma/medio.php"
 ]
 
 let sessions = {}
