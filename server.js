@@ -1,99 +1,51 @@
-const express = require("express")
+<?php
 
-const app = express()
-const PORT = process.env.PORT || 3000
-
-/* lista de servidores */
-
-const servers = [
- "https://extraer1.vercel.app",
- "https://extraer-beta.vercel.app",
- "https://nada-pi2z.onrender.com",
- "https://nada1.onrender.com",
- "https://nada1-yt1c.onrender.com",
+$servers = [
+ "https://extraer1.vercel.app/play",
+ "https://extraer-beta.vercel.app/play",
+ "https://nada-pi2z.onrender.com/play",
+ "https://nada1.onrender.com/play",
+ "https://nada1-yt1c.onrender.com/play",
  "http://zonabom.cu.ma/medio.php",
- "http://recetascaseras.whf.bz/medio.php",
+ "https://recetascaseras.whf.bz/medio.php",
  "http://tequiero.cu.ma/medio.php"
-]
+];
 
-let sessions = {}
+$file = "counter.txt";
 
-function getUserId(req,res){
-
- const cookie = req.headers.cookie
-
- if(cookie){
-  const match = cookie.match(/uid=([^;]+)/)
-  if(match) return match[1]
- }
-
- const uid = Math.random().toString(36).substring(2,10)
-
- res.setHeader(
-  "Set-Cookie",
-  `uid=${uid}; Path=/; Max-Age=86400`
- )
-
- return uid
+if(!file_exists($file)){
+ file_put_contents($file,0);
 }
 
-function getServer(uid){
+$counter = (int)file_get_contents($file);
 
- const now = Date.now()
+$server = $servers[$counter % count($servers)];
 
- if(!sessions[uid]){
+$counter++;
 
-  sessions[uid] = {
-   index: Math.floor(Math.random()*servers.length),
-   time: now
-  }
+file_put_contents($file,$counter);
 
- }
+/* deportes */
 
- const elapsed = now - sessions[uid].time
+if(isset($_GET["id"])){
 
- /* cambiar servidor solo si pasó 1 minuto */
+ $id = intval($_GET["id"]);
 
- if(elapsed > 60000){
-
-  sessions[uid].index =
-  (sessions[uid].index + 1) % servers.length
-
-  sessions[uid].time = now
-
- }
-
- return servers[sessions[uid].index]
-
+ header("Location: ".$server."?id=".$id);
+ exit;
 }
 
-app.get("/play",(req,res)=>{
+/* regional */
 
- const uid = getUserId(req,res)
+if(isset($_GET["regional"])){
 
- const server = getServer(uid)
+ $id = intval($_GET["regional"]);
 
- if(req.query.regional){
+ header("Location: ".$server."?regional=".$id);
+ exit;
+}
 
-  res.redirect(
-   `${server}/play?regional=${req.query.regional}`
-  )
-  return
-
- }
-
- if(req.query.deportes){
-
-  res.redirect(
-   `${server}/play?deportes=${req.query.deportes}`
-  )
-  return
-
- }
-
- res.send("canal no especificado")
-
-})
+echo "uso: ?id=5 o ?regional=32";
 
 app.listen(PORT,()=>{
  console.log("balanceador ultra escalable en "+PORT)
